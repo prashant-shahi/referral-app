@@ -83,6 +83,30 @@ def main():
     finally:
         txn.discard()
 
+    # Query
+    res = client.txn(read_only=True).query("""query all($a: string) {
+    all(func: eq(email, $a)) {
+        uid
+        name
+        email
+        age
+        referred {
+            uid
+            name
+            email
+            age
+            referred {
+                uid
+                name
+                email
+                age
+            }
+        }
+    }
+    }""", variables={'$a': 'arya@got.com'})
+
+    print(res.json)
+
     # Close the client stub.
     client_stub.close()
 
