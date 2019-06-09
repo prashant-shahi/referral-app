@@ -1,0 +1,200 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Referrals App API",
+		"_postman_id": "151e69d0-0ae4-21d0-a195-b4cd4f273896",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "GET / check server status",
+			"request": {
+				"url": "localhost:5000/",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": "Checks if server is up"
+			},
+			"response": []
+		},
+		{
+			"name": "GET /setup - clear all old data and load the data",
+			"request": {
+				"url": "localhost:5000/setup",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": "Clear existing data, create schema, and load sample data"
+			},
+			"response": []
+		},
+		{
+			"name": "/salesman - Fetch data with salesman as root node",
+			"request": {
+				"url": "localhost:5000/query",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "email",
+							"value": "alan@gmail.com",
+							"type": "text",
+							"description": ""
+						},
+						{
+							"key": "id",
+							"value": "0x102d10",
+							"description": "",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "(deprecated) /referrals - fetch all other salesman referred by one",
+			"request": {
+				"url": "localhost:5000/referrals",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "email",
+							"value": "alan@gmail.com",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": "Now, it can be achieved by GET /salesman API"
+			},
+			"response": []
+		},
+		{
+			"name": "/create-sales - Creating sales wrt salesman",
+			"request": {
+				"url": "localhost:5000/sales",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "invoice_no",
+							"value": "123456789",
+							"type": "text",
+							"description": ""
+						},
+						{
+							"key": "item",
+							"value": "Milton AQUA Bottle",
+							"type": "text",
+							"description": ""
+						},
+						{
+							"key": "store",
+							"value": "Home and Kitchen Applicances",
+							"type": "text",
+							"description": ""
+						},
+						{
+							"key": "price",
+							"value": "750",
+							"type": "text",
+							"description": ""
+						},
+						{
+							"key": "quantity",
+							"value": "3",
+							"type": "text",
+							"description": ""
+						},
+						{
+							"key": "salesman",
+							"value": "alan@gmail.com",
+							"type": "text",
+							"description": ""
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "(deprecated) /fetch-sales - Fetching sales made by a salesman",
+			"request": {
+				"url": "localhost:5000/fetch-sales",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "email",
+							"value": "alan@gmail.com",
+							"description": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "id",
+							"value": "0x102d10",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": "Now, it can be achieved using GET /salesman API"
+			},
+			"response": []
+		},
+		{
+			"name": "/create-salesman - Creating salesman with/without referral",
+			"request": {
+				"url": "localhost:5000/create-salesman",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "Glen",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "glen@gmail.com",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "23",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "referrer",
+							"value": "bob@gmail.com",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}

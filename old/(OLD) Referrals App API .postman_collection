@@ -1,0 +1,93 @@
+{
+	"variables": [],
+	"info": {
+		"name": "(OLD) Referrals App API ",
+		"_postman_id": "8c315b30-5a11-19a8-2099-b323a2648fe0",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "localhost:5000/clear-all",
+			"request": {
+				"url": "localhost:5000/clear-all",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/fetch-uid - Fetch uid",
+			"request": {
+				"url": "localhost:5000/fetch-uid",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "email",
+							"value": "araya@got.com",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/register - Add new user",
+			"request": {
+				"url": "localhost:5000/register",
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "Hound",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "hound@got.com",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "age",
+							"value": "32",
+							"description": "",
+							"type": "text"
+						},
+						{
+							"key": "referrer",
+							"value": "arya@got.com",
+							"description": "",
+							"type": "text"
+						}
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/load-sample-data",
+			"request": {
+				"url": "localhost:5000/load-sample-data",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
