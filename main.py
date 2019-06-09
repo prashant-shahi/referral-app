@@ -136,6 +136,15 @@ def query_data(email=None, uid=None):
                 email
                 age
             }
+            sold {
+                item
+                uid
+                store
+                invoice_no
+                price
+                quantity
+                total_amount
+            }
         }
         }"""
     elif email:
@@ -151,6 +160,15 @@ def query_data(email=None, uid=None):
                 email
                 age
             }
+            sold {
+                item
+                uid
+                store
+                invoice_no
+                price
+                quantity
+                total_amount
+            }
         }
         }"""
     else:
@@ -165,7 +183,7 @@ def referred_salesman(email=None, uid=None):
     if uid:
         variables ={'$uid': str(uid)}
         query = """query referrals($uid: string) {
-        all(func: eq(uid, $uid)) {
+        referred_salesman(func: eq(uid, $uid)) {
             referred {
                 uid
                 name
@@ -176,12 +194,66 @@ def referred_salesman(email=None, uid=None):
         }"""
     elif email:
         query = """query referrals($email: string) {
-        all(func: eq(email, $email)) {
+        referred_salesman(func: eq(email, $email)) {
             referred {
                 uid
                 name
                 email
                 age
+            }
+        }
+        }"""
+    else:
+        return
+    res = client.txn(read_only=True).query(query, variables=variables)
+    print("referred_salesman response: ", res)
+    return json.loads(res.json)
+
+# Listing sales by a salesman.
+def fetch_sales(email=None, uid=None):
+    variables = {'$email': email}
+    if uid is not None:
+        variables ={'$uid': str(uid)}
+        query = """query referrals($uid: string) {
+        sales(func: eq(uid, $uid)) {
+            name
+            uid
+            email
+            sold {
+                item
+                uid
+                store
+                invoice_no
+                price
+                quantity
+                total_amount
+            }
+            referred {
+                name
+                uid
+                email
+            }
+        }
+        }"""
+    elif email is not None:
+        query = """query referrals($email: string) {
+        sales(func: eq(email, $email)) {
+            name
+            uid
+            email
+            sold {
+                item
+                uid
+                store
+                invoice_no
+                price
+                quantity
+                total_amount
+            }
+            referred {
+                name
+                uid
+                email
             }
         }
         }"""
@@ -312,6 +384,27 @@ def salesman_referrals():
         "data": query_response
     })
 
+@app.route("/fetch-sales", methods=['POST'])
+def get_sales():
+    uid = request.values.get("id")
+    email = request.values.get("email")
+    query_response = None
+    if uid:
+        print("referrals uid")
+        query_response = fetch_sales(uid=uid)
+    elif email:
+        print("referrals email")
+        query_response = fetch_sales(email=email)
+    if query_response is None:
+        return json_response({
+            "status": "error",
+            "error": "invalid arguments passed"
+        })
+    return json_response({
+        "status": "success",
+        "data": query_response
+    })
+
 @app.route("/sales", methods=['POST'])
 def sales():
     item = request.values.get("item")
@@ -331,7 +424,7 @@ def sales():
         })
     invoice_no = random.sample(range(1, 9999999), 1)
     sales_obj = {
-        "invoice_no": invoice_no
+        "invoice_no": invoice_no,
         "item": item,
         "store": store,
         "price": price,
