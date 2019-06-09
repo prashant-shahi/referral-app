@@ -292,7 +292,7 @@ def register():
         "message": "new salesman successfully registered"
     })
 
-@app.route("/get-all", methods=['POST'])
+@app.route("/salesman", methods=['POST'])
 def query():
     uid = request.values.get("id")
     email = request.values.get("email")

@@ -32,7 +32,7 @@
 		{
 			"name": "/salesman - Fetch data with salesman as root node",
 			"request": {
-				"url": "localhost:5000/query",
+				"url": "localhost:5000/salesman",
 				"method": "POST",
 				"header": [],
 				"body": {
