@@ -2,6 +2,7 @@ import json
 import pydgraph
 from flask import Flask, flash, render_template, redirect, request, url_for, Response, abort
 import random
+import datetime
 
 app = Flask(__name__)
 
@@ -53,6 +54,7 @@ def set_schema(schema=None):
 def create_data(myobj=None):
     # Create a new transaction.
     txn = client.txn()
+    assigned = None
     try:
         if myobj is None:
             myobj = {
@@ -138,6 +140,8 @@ def create_data(myobj=None):
         # and hence safe.
         txn.discard()
         print('\n')
+
+    return assigned.uids
 
 # Query
 def query_data(email=None, uid=None):
@@ -241,10 +245,10 @@ def fetch_salesman_uid(email="alan@gmail.com"):
     return uid
 
 # Creating sales.
-def create_sales(salesman, sales_obj):
+def create_sales(salesman_email, sales_obj):
     print("sales_obj: ", sales_obj)
-    print("salesman email: ", salesman)
-    salesman_uid = fetch_salesman_uid(email=salesman)
+    print("salesman email: ", salesman_email)
+    salesman_uid = fetch_salesman_uid(email=salesman_email)
     if salesman_uid is None:
         return
     myobj = {
@@ -253,8 +257,10 @@ def create_sales(salesman, sales_obj):
     }
 
     print("create_sales myobj: ", myobj)
-    create_data(myobj=myobj)
-    return True
+    uids = create_data(myobj=myobj)
+    if uids is not None and len(uids)>0:
+        return uids['blank-0']
+    return
 
 # JSON response
 def json_response(object):
@@ -285,15 +291,16 @@ def register():
             "status": "error",
             "error": "no payload found"
         })
-    uid = email = ""
+    uid = name = email = age = referrer = ""
     try:
         name = request_json["name"]
         email = request_json["email"]
+        age = request_json["age"]
         referrer = request_json["referrer"]
     except Exception as err:
         pass
         print(datetime.datetime.now(), "Error: not all required data provided")
-    if not(name and email):
+    if not(name and email and age):
         return json_response({
             "status": "error",
             "error": "not all required data provided"
@@ -301,7 +308,9 @@ def register():
     salesman_object = {
         'email': email,
         'name': name,
+        'age': age
     }
+    user_obj = salesman_object
     if referrer is not None:
         uid = fetch_salesman_uid(referrer)
         if uid is None:
@@ -315,12 +324,16 @@ def register():
         }
 
     print("New user object: ", salesman_object)
-    creation_response = create_data(salesman_object)
-    print("Creation response: ", creation_response)
+    uids = create_data(salesman_object)
+    print("uids: ", uids)
+    if uids is not None and len(uids)>0:
+        uid = uids['blank-0']
+        user_obj['uid'] = uid
 
     return json_response({
         "status": "success",
-        "message": "new salesman successfully registered"
+        "message": "new salesman successfully registered",
+        "data": user_obj
     })
 
 @app.route("/salesman", methods=['POST'])
@@ -401,7 +414,7 @@ def sales():
             "status": "error",
             "error": "no payload found"
         })
-    if not('item' in request_json and 'store' in request_json and 'salesman' in request_json and 'price' in request_json and 'quantity' in request_json):
+    if not('item' in request_json and 'store' in request_json and 'salesman_email' in request_json and 'price' in request_json and 'quantity' in request_json):
         return json_response({
             "status": "error",
             "error": "not all required data provided"
@@ -410,7 +423,7 @@ def sales():
     store = request_json["store"]
     price = int(request_json["price"])
     quantity = int(request_json["quantity"])
-    salesman = request_json["salesman"]
+    salesman_email = request_json["salesman_email"]
     if price <= 0 and quantity <=0:
         return json_response({
             "status": "error",
@@ -425,18 +438,18 @@ def sales():
         "quantity": quantity,
         "total_amount": price*quantity
     }
-    res = create_sales(salesman, sales_obj)
-    if res is None:
+    uid = create_sales(salesman_email, sales_obj)
+    if uid is None:
         return json_response({
             "status": "error",
             "error": "error occurred while creating sales"
         })
-    elif res is True:
-        return json_response({
-            "status": "success",
-            "message": "successfully created sales under a salesman",
-            "data": sales_obj
-        })
+    sales_obj['uid'] = uid
+    return json_response({
+        "status": "success",
+        "message": "successfully created sales under a salesman",
+        "data": sales_obj
+    })
 
 
 if __name__ == '__main__':
