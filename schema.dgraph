@@ -1,0 +1,25 @@
+salesman.name: string @index(term) .
+salesman.email: string @index(exact) .
+salesman.age: int @index(int) .
+sold: uid @count @reverse .
+referred: uid @count @reverse .
+
+invoice_no: int @index(int) .
+item: uid @count @reverse .
+price: int @index(int) .
+quantity: int @index(int) .
+total_amount: int @index(int) .
+store: uid @count @reverse .
+
+store.name: string @index(term) .
+location: string @index(term) .
+
+product.name: string @index(term) .
+category: uid @count @reverse .
+
+category.name: string @index(term) .
+
+customer.name: string @index(term) .
+customer.email: string @index(exact) .
+customer.age: int @index(int) .
+bought: uid @count @reverse .

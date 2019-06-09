@@ -1,0 +1,127 @@
+{
+  "salesman.name": "Alan",
+  "salesman.email": "alan@gmail.com",
+  "salesman.age": 27,
+  "sold": [
+    {
+      "invoice_no": 123431,
+      "item": [
+        {
+          "product.name": "Apple iPad Pro",
+          "category": [
+            {
+              "name": "Electronics"
+            },
+            {
+              "name": "Mobiles and Tablets"
+            }
+          ]
+        }
+      ],
+      "price": 58900,
+      "quantity": 3,
+      "total_amount": 235600,
+      "store": [
+        {
+          "store.name": "Elysium Electronics",
+          "location": "MG Road, Bangalore"
+        }
+      ]
+    }
+  ],
+  "referred": [
+    {
+      "salesman.name": "Bob",
+      "salesman.email": "bob@gmail.com",
+      "salesman.age": 18,
+      "sold": [
+        {
+          "invoice_no": 431441,
+          "item": [
+            {
+              "product.name": "Beats by Dre Pro",
+              "category": [
+                {
+                  "name": "Electronics"
+                },
+                {
+                  "name": "Headphones"
+                }
+              ]
+            }
+          ],
+          "price": 33300,
+          "quantity": 2,
+          "total_amount": 66600,
+          "store": [
+            {
+              "store.name": "Elysium Electronics",
+              "location": "MG Road, Bangalore"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "salesman.name": "Coby",
+      "salesman.email": "coby@gmail.com",
+      "salesman.age": 21,
+      "sold": [
+        {
+          "invoice_no": 43242123,
+          "item": [
+            {
+              "store.name": "Ford EcoSport Titanium",
+              "category": [
+                {
+                  "name": "Automobiles"
+                }
+              ]
+            }
+          ],
+          "price": 1050000,
+          "quantity": 1,
+          "total_amount": 1050000,
+          "store": [
+            {
+              "store.name": "Ford Showroom",
+              "location": "Jayanagar, Bangalore"
+            }
+          ]
+        },
+        {
+          "invoice_no": 43242123,
+          "item": [
+            {
+              "product.name": "Beats by Dre Pro",
+              "category": [
+                {
+                  "name": "Electronics"
+                },
+                {
+                  "name": "Headphones"
+                }
+              ]
+            }
+          ],
+          "price": 431441,
+          "quantity": 1,
+          "total_amount": 431441,
+          "store": [
+            {
+              "store.name": "Elysium Electronics",
+              "location": "MG Road, Bangalore"
+            }
+          ]
+        }
+      ],
+      "referred": [
+        {
+          "salesman.name": "Derik",
+          "salesman.email": "derik@gmail.com",
+          "salesman.age": 31
+        }
+      ]
+    }
+  ]
+}

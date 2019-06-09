@@ -3,6 +3,7 @@ import pydgraph
 from flask import Flask, flash, render_template, redirect, request, url_for, Response, abort
 import random
 import datetime
+from string import Template
 
 app = Flask(__name__)
 
@@ -29,23 +30,20 @@ def drop_all():
     print("drop_all: ", op)
     return client.alter(op)
 
+# Loading sample data.
+def load_sample():
+    try:
+        myobj = json.load(open('./sample-data.json'))
+        return myobj
+    except Exception as err:
+        pass
+        print(datetime.datetime.now(), "error: ", err)
+        return
 # Set schema.
 def set_schema(schema=None):
     if schema is None:
-        schema = """
-            name: string @index(term) .
-            email: string @index(exact) .
-            age: int @index(int) .
-            sold: uid @count @reverse .
-            referred: uid @count @reverse .
-
-            invoice_no: int @index(int) .
-            item: string @index(term) .
-            price: int @index(int) .
-            quantity: int @index(int) .
-            total_amount: int @index(int) .
-            store: string @index(term) .
-        """
+        schema = open('./schema.dgraph').read()
+        print("schema: \n", schema)
     op = pydgraph.Operation(schema=schema)
     print("set_schema: ", op)
     return client.alter(op)
@@ -57,67 +55,8 @@ def create_data(myobj=None):
     assigned = None
     try:
         if myobj is None:
-            myobj = {
-                "name": "Alan",
-                "email": "alan@gmail.com",
-                "age": 22,
-                "sold": [
-                  {
-                    "item": "Apple iPad Pro",
-                    "store": "ABC Gadgets",
-                    "invoice_no": 123431,
-                    "price": 58900,
-                    "quantity": 4,
-                    "total_amount": 58900*4
-                  }
-                ],
-                "referred": [
-                  {
-                    "name": "Coby",
-                    "email": "coby@gmail.com",
-                    "age": 27,
-                    "referred": [
-                      {
-                        "name": "Derik",
-                        "email": "derik@gmail.com",
-                        "sold": [
-                          {
-                            "item": "Ford EcoSport Titanium",
-                            "store": "Car Showroom",
-                            "invoice_no": 431441,
-                            "price": 1050000,
-                            "quantity": 1,
-                            "total_amount": 1050000*1
-                          },
-                          {
-                            "item": "Bacon Spinach Alfredo Pizza",
-                            "store": "Tasty FoodHub",
-                            "invoice_no": 431441,
-                            "price": 350,
-                            "quantity": 3,
-                            "total_amount": 350*3
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "name": "Bob",
-                    "email": "bob@gmail.com",
-                    "age": 19,
-                    "sold": [
-                      {
-                        "item": "Beats by Dre Pro",
-                        "store": "ABC Gadgets",
-                        "invoice_no": 5432546,
-                        "price": 33300,
-                        "quantity": 2,
-                        "total_amount": 33300*3
-                      }
-                    ]
-                  }
-                ]
-            }
+            myobj = load_sample();
+            print("create_data myobj: ", myobj)
 
         # Run mutation.
         assigned = txn.mutate(set_obj=myobj)
@@ -233,6 +172,30 @@ def referred_salesman(email=None, uid=None):
     print("referred_salesman response: ", res)
     return json.loads(res.json)
 
+def get_uid(reference=None, value=None):
+    if  not(reference or value):
+        return
+    query = """query getuid{
+        get_uid(func: eq($reference, $value)) {
+            uid
+            $reference
+        }
+    }"""
+    template = Template(query)
+
+    # Substitute value of $reference and value
+    query = template.substitute({'reference': reference, 'value': '"'+value+'"'})
+
+    #variables = {'$value': value}
+    res = client.txn(read_only=True).query(query)
+    query_response = json.loads(res.json)
+    if len(query_response['get_uid']) <= 0:
+        return
+    print("query_response: ", query_response)
+    uid = query_response['get_uid'][0]
+    print("uid: ", uid)
+    return uid
+
 def fetch_salesman_uid(email="alan@gmail.com"):
     query_response = query_data(email=email)
     print(query_response)
@@ -258,8 +221,9 @@ def create_sales(salesman_email, sales_obj):
 
     print("create_sales myobj: ", myobj)
     uids = create_data(myobj=myobj)
+    uid = uids['blank-0']
     if uids is not None and len(uids)>0:
-        return uids['blank-0']
+        return uid
     return
 
 # JSON response
@@ -272,6 +236,15 @@ def index():
         "server": "up"
     })
 
+@app.route("/clear-all")
+def clear_all():
+    res = drop_all()
+    print(res)
+    return json_response({
+        "status": "success",
+        "message": "All existing data cleared"
+    })
+
 @app.route("/setup")
 def setup():
     drop_all()
@@ -280,6 +253,32 @@ def setup():
     return json_response({
         "status": "success",
         "message": "Setup complete"
+    })
+
+@app.route("/get-uid", methods=["POST"])
+def getuid():
+    request_json = request.get_json(force=True)
+    print("request_json: ", request_json)
+    if request_json is None:
+        return json_response({
+            "status": "error",
+            "error": "no payload found"
+        })
+    reference = value = ""
+    if 'reference' in request_json:
+        reference = request_json["reference"]
+    if 'value' in request_json:
+        value = request_json["value"]
+    uid = get_uid(reference, value)
+    if uid is None:
+        return json_response({
+            "status": "error",
+            "error": "couldn't fetch uid"
+        })
+    return json_response({
+        "status": "success",
+        "message": "successfully fetched uid",
+        "data": uid
     })
 
 @app.route("/create-salesman", methods=['POST'])
