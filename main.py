@@ -32,8 +32,9 @@ def drop_all():
 def set_schema(schema=None):
     if schema is None:
         schema = """
-            name: string @index(term)  @lang .
+            name: string @index(term) .
             email: string @index(exact) .
+            age: int @index(int) .
             sold: uid @count @reverse .
             referred: uid @count @reverse .
 
@@ -57,16 +58,22 @@ def create_data(myobj=None):
             myobj = {
                 "name": "Alan",
                 "email": "alan@gmail.com",
+                "age": 22,
                 "sold": [
                   {
                     "item": "Apple iPad Pro",
-                    "store": "ABC Gadgets"
+                    "store": "ABC Gadgets",
+                    "invoice_no": 123431,
+                    "price": 58900,
+                    "quantity": 4,
+                    "total_amount": 58900*4
                   }
                 ],
                 "referred": [
                   {
                     "name": "Coby",
                     "email": "coby@gmail.com",
+                    "age": 27,
                     "referred": [
                       {
                         "name": "Derik",
@@ -74,11 +81,19 @@ def create_data(myobj=None):
                         "sold": [
                           {
                             "item": "Ford EcoSport Titanium",
-                            "store": "Car Showroom"
+                            "store": "Car Showroom",
+                            "invoice_no": 431441,
+                            "price": 1050000,
+                            "quantity": 1,
+                            "total_amount": 1050000*1
                           },
                           {
                             "item": "Bacon Spinach Alfredo Pizza",
-                            "store": "Tasty FoodHub"
+                            "store": "Tasty FoodHub",
+                            "invoice_no": 431441,
+                            "price": 350,
+                            "quantity": 3,
+                            "total_amount": 350*3
                           }
                         ]
                       }
@@ -87,10 +102,15 @@ def create_data(myobj=None):
                   {
                     "name": "Bob",
                     "email": "bob@gmail.com",
+                    "age": 19,
                     "sold": [
                       {
                         "item": "Beats by Dre Pro",
-                        "store": "ABC Gadgets"
+                        "store": "ABC Gadgets",
+                        "invoice_no": 5432546,
+                        "price": 33300,
+                        "quantity": 2,
+                        "total_amount": 33300*3
                       }
                     ]
                   }
@@ -258,10 +278,21 @@ def setup():
 
 @app.route("/create-salesman", methods=['POST'])
 def register():
-    name = request.values.get("name")
-    email = request.values.get("email")
-    referrer = request.values.get("referrer")
-
+    request_json = request.get_json(force=True)
+    print("request_json: ", request_json)
+    if request_json is None:
+        return json_response({
+            "status": "error",
+            "error": "no payload found"
+        })
+    uid = email = ""
+    try:
+        name = request_json["name"]
+        email = request_json["email"]
+        referrer = request_json["referrer"]
+    except Exception as err:
+        pass
+        print(datetime.datetime.now(), "Error: not all required data provided")
     if not(name and email):
         return json_response({
             "status": "error",
@@ -294,8 +325,18 @@ def register():
 
 @app.route("/salesman", methods=['POST'])
 def query():
-    uid = request.values.get("id")
-    email = request.values.get("email")
+    request_json = request.get_json(force=True)
+    print("request_json: ", request_json)
+    if request_json is None:
+        return json_response({
+            "status": "error",
+            "error": "no payload found"
+        })
+    uid = email = ""
+    if 'id' in request_json:
+        uid = request_json["id"]
+    if 'email' in request_json:
+        email = request_json["email"]
     query_response = None
     if uid:
         print("query uid")
@@ -316,8 +357,18 @@ def query():
 
 @app.route("/referrals", methods=['POST'])
 def salesman_referrals():
-    uid = request.values.get("id")
-    email = request.values.get("email")
+    request_json = request.get_json(force=True)
+    print("request_json: ", request_json)
+    if request_json is None:
+        return json_response({
+            "status": "error",
+            "error": "no payload found"
+        })
+    uid = email = None
+    if 'id' in request_json:
+        uid = request_json["id"]
+    if 'email' in request_json:
+        email = request_json["email"]
     query_response = None
     if uid:
         print("referrals uid")
@@ -335,24 +386,37 @@ def salesman_referrals():
         "data": query_response
     })
 
-@app.route("/sales", methods=['POST'])
+@app.route("/create-sales", methods=['POST'])
 def sales():
-    item = request.values.get("item")
-    store = request.values.get("store")
-    price = int(request.values.get("price"))
-    quantity = int(request.values.get("quantity"))
-    salesman = request.values.get("salesman")
-    if not(item and store and price and quantity and salesman):
+    request_json = request.get_json(force=True)
+    print("request_json: ", request_json)
+    if request_json is None:
+        return json_response({
+            "status": "error",
+            "error": "no payload found"
+        })
+    uid = email = item = store = price = quantity = ""
+    if request_json is None:
+        return json_response({
+            "status": "error",
+            "error": "no payload found"
+        })
+    if not('item' in request_json and 'store' in request_json and 'salesman' in request_json and 'price' in request_json and 'quantity' in request_json):
         return json_response({
             "status": "error",
             "error": "not all required data provided"
         })
+    item = request_json["item"]
+    store = request_json["store"]
+    price = int(request_json["price"])
+    quantity = int(request_json["quantity"])
+    salesman = request_json["salesman"]
     if price <= 0 and quantity <=0:
         return json_response({
             "status": "error",
             "error": "price and quantity should be positive"
         })
-    invoice_no = random.sample(range(1, 9999999), 1)
+    invoice_no = random.sample(range(1, 9999999), 1)[0]
     sales_obj = {
         "invoice_no": invoice_no,
         "item": item,
@@ -370,7 +434,8 @@ def sales():
     elif res is True:
         return json_response({
             "status": "success",
-            "message": "successfully created sales under a salesman"
+            "message": "successfully created sales under a salesman",
+            "data": sales_obj
         })
 
 
