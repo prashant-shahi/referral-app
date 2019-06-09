@@ -291,6 +291,27 @@ def query():
     }
     return json_response(response)
 
+@app.route("/referrals", methods=['POST'])
+def salesman_referrals():
+    uid = request.values.get("id")
+    email = request.values.get("email")
+    query_response = None
+    if uid:
+        print("referrals uid")
+        query_response = referred_salesman(uid=uid)
+    elif email:
+        print("referrals email")
+        query_response = referred_salesman(email=email)
+    if query_response is None:
+        return json_response({
+            "status": "error",
+            "error": "invalid arguments passed"
+        })
+    return json_response({
+        "status": "success",
+        "data": query_response
+    })
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
