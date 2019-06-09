@@ -312,6 +312,44 @@ def salesman_referrals():
         "data": query_response
     })
 
+@app.route("/sales", methods=['POST'])
+def sales():
+    item = request.values.get("item")
+    store = request.values.get("store")
+    price = int(request.values.get("price"))
+    quantity = int(request.values.get("quantity"))
+    salesman = request.values.get("salesman")
+    if not(item and store and price and quantity and salesman):
+        return json_response({
+            "status": "error",
+            "error": "not all required data provided"
+        })
+    if price <= 0 and quantity <=0:
+        return json_response({
+            "status": "error",
+            "error": "price and quantity should be positive"
+        })
+    invoice_no = random.sample(range(1, 9999999), 1)
+    sales_obj = {
+        "invoice_no": invoice_no
+        "item": item,
+        "store": store,
+        "price": price,
+        "quantity": quantity,
+        "total_amount": price*quantity
+    }
+    res = create_sales(salesman, sales_obj)
+    if res is None:
+        return json_response({
+            "status": "error",
+            "error": "error occurred while creating sales"
+        })
+    elif res is True:
+        return json_response({
+            "status": "success",
+            "message": "successfully created sales under a salesman"
+        })
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
