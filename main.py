@@ -209,60 +209,6 @@ def referred_salesman(email=None, uid=None):
     print("referred_salesman response: ", res)
     return json.loads(res.json)
 
-# Listing sales by a salesman.
-def fetch_sales(email=None, uid=None):
-    variables = {'$email': email}
-    if uid is not None:
-        variables ={'$uid': str(uid)}
-        query = """query referrals($uid: string) {
-        sales(func: eq(uid, $uid)) {
-            name
-            uid
-            email
-            sold {
-                item
-                uid
-                store
-                invoice_no
-                price
-                quantity
-                total_amount
-            }
-            referred {
-                name
-                uid
-                email
-            }
-        }
-        }"""
-    elif email is not None:
-        query = """query referrals($email: string) {
-        sales(func: eq(email, $email)) {
-            name
-            uid
-            email
-            sold {
-                item
-                uid
-                store
-                invoice_no
-                price
-                quantity
-                total_amount
-            }
-            referred {
-                name
-                uid
-                email
-            }
-        }
-        }"""
-    else:
-        return
-    res = client.txn(read_only=True).query(query, variables=variables)
-    print("referred_salesman response: ", res)
-    return json.loads(res.json)
-
 def fetch_salesman_uid(email="alan@gmail.com"):
     query_response = query_data(email=email)
     print(query_response)
@@ -310,7 +256,7 @@ def setup():
         "message": "Setup complete"
     })
 
-@app.route("/register", methods=['POST'])
+@app.route("/create-salesman", methods=['POST'])
 def register():
     name = request.values.get("name")
     email = request.values.get("email")
@@ -327,13 +273,18 @@ def register():
     }
     if referrer is not None:
         uid = fetch_salesman_uid(referrer)
-        user_object = {
+        if uid is None:
+            return json_response({
+                "status": "error",
+                "error": "invalid referrer id"
+            })
+        salesman_object = {
             'uid': uid,
-            'referred': user_object
+            'referred': salesman_object
         }
 
-    print("New user object: ", user_object)
-    creation_response = create_data(user_object)
+    print("New user object: ", salesman_object)
+    creation_response = create_data(salesman_object)
     print("Creation response: ", creation_response)
 
     return json_response({
@@ -341,7 +292,7 @@ def register():
         "message": "new salesman successfully registered"
     })
 
-@app.route("/query", methods=['POST'])
+@app.route("/get-all", methods=['POST'])
 def query():
     uid = request.values.get("id")
     email = request.values.get("email")
@@ -374,27 +325,6 @@ def salesman_referrals():
     elif email:
         print("referrals email")
         query_response = referred_salesman(email=email)
-    if query_response is None:
-        return json_response({
-            "status": "error",
-            "error": "invalid arguments passed"
-        })
-    return json_response({
-        "status": "success",
-        "data": query_response
-    })
-
-@app.route("/fetch-sales", methods=['POST'])
-def get_sales():
-    uid = request.values.get("id")
-    email = request.values.get("email")
-    query_response = None
-    if uid:
-        print("referrals uid")
-        query_response = fetch_sales(uid=uid)
-    elif email:
-        print("referrals email")
-        query_response = fetch_sales(email=email)
     if query_response is None:
         return json_response({
             "status": "error",
