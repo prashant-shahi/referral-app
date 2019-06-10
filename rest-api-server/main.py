@@ -177,44 +177,14 @@ def query_data(email=None, uid=None):
             }
         }
         }"""
+        template = Template(query)
+        query = template.substitute(variables)
     else:
         return
     print("variables: ", variables)
     print("query: ", query)
     res = client.txn(read_only=True).query(query)
     print("query_data response: ", res)
-    return json.loads(res.json)
-
-# Listing referred salesmen.
-def referred_salesman(email=None, uid=None):
-    variables = {'$email': email}
-    if uid:
-        variables ={'$uid': str(uid)}
-        query = """query referrals($uid: string) {
-        referred_salesman(func: eq(uid, $uid)) {
-            referred {
-                uid
-                salesman.name
-                salesman.email
-                salesman.age
-            }
-        }
-        }"""
-    elif email:
-        query = """query referrals($email: string) {
-        referred_salesman(func: eq(salesman.email, $email)) {
-            referred {
-                uid
-                salesman.name
-                salesman.email
-                salesman.age
-            }
-        }
-        }"""
-    else:
-        return
-    res = client.txn(read_only=True).query(query, variables=variables)
-    print("referred_salesman response: ", res)
     return json.loads(res.json)
 
 # Fetching uid of any node wrt any reference and value using Template.
@@ -245,18 +215,6 @@ def get_uid_obj(reference=None, value=None):
     except Exception as err:
         print(datetime.datetime.now(), "Error: ", err)
         return
-
-# (Deprecated) Fetching salesman's uid wrt email
-def fetch_salesman_uid(email=None):
-    query_response = query_data(email=email)
-    print(query_response)
-    if len(query_response['all']) <= 0:
-        return
-    salesman_obj = query_response['all'][0]
-    print(salesman_obj)
-    uid = salesman_obj['uid']
-    print(uid)
-    return uid
 
 # Creating sales node.
 def create_sales(customer_email, sales_obj, salesman_email):
@@ -471,37 +429,6 @@ def query():
         "data": query_response
     }
     return json_response(response)
-
-@app.route("/referrals", methods=['POST'])
-def salesman_referrals():
-    request_json = request.get_json(force=True)
-    print("request_json: ", request_json)
-    if request_json is None:
-        return json_response({
-            "status": "error",
-            "error": "no payload found"
-        })
-    uid = email = None
-    if 'id' in request_json:
-        uid = request_json["id"]
-    if 'email' in request_json:
-        email = request_json["email"]
-    query_response = None
-    if uid:
-        print("referrals uid")
-        query_response = referred_salesman(uid=uid)
-    elif email:
-        print("referrals email")
-        query_response = referred_salesman(email=email)
-    if query_response is None:
-        return json_response({
-            "status": "error",
-            "error": "invalid arguments passed"
-        })
-    return json_response({
-        "status": "success",
-        "data": query_response
-    })
 
 @app.route("/create-store", methods=['POST'])
 def store_creation():
