@@ -248,7 +248,7 @@ def create_sales(customer_email, sales_obj, salesman_email):
         return
     return uid
 
-# Creating store node.
+# (Deprecated) Creating store node.
 def create_store(store_obj):
     print("store_obj: ", store_obj)
     store_name = store_obj['store.name']
@@ -264,19 +264,22 @@ def create_store(store_obj):
     return uid
 
 # Generic node creation.
-def create(myobj):
-    print("store_obj: ", sales_obj)
-    store_name = sales_obj['store.name']
-    store_uid = get_uid_obj("store.name", store_name)
-    if store_uid is not None:
-        print("WARN: Store with name ", store_name, " already exists with uid <", store_uid, ">")
-        return
-    print("create_store myobj: ", store_obj)
-    uids = create_data(myobj=store_obj)
-    uid = uids['blank-0']
-    if uids is not None and len(uids)>0:
+def create(myobj, reference):
+    print("create myobj: ", myobj)
+    value = myobj[reference]
+    object_uid = get_uid_obj(reference, value)
+    uid = ""
+    if object_uid is not None:
+        uid = object_uid['uid']
+        print("WARN: Node with ", reference, " = ", value, " already exists with uid <", uid, ">")
         return uid
-    return
+    uids = create_data(myobj=myobj)
+    uid = uids['blank-0']
+    myobj['uid'] = uid
+    print("myobj: ", myobj)
+    if uids is None or len(uids)<=0:
+        return
+    return myobj
 
 # JSON response for app routes' return.
 def json_response(object):
@@ -451,18 +454,21 @@ def store_creation():
         "store.name": store_name,
         "location": location
     }
-    uid = create_store(store_obj)
-    if uid is None:
+    res = create(store_obj, reference='store.name')
+    print("res: ", res)
+    if res is None:
         return json_response({
             "status": "error",
             "error": "error while creating store"
         })
-    elif uid is True:
+    elif isinstance(res, str) or isinstance(res, unicode):
+        store_obj['uid'] = res
         return json_response({
-            "status": "error",
-            "error": "store with same name already exists"
+            "status": "warning",
+            "message": "store name already exists",
+            "data": store_obj
         })
-    store_obj['uid'] = uid
+    store_obj['uid'] = res['uid']
     return json_response({
         "status": "success",
         "message": "successfully created store",
