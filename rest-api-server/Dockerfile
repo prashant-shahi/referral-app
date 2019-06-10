@@ -11,10 +11,10 @@ COPY requirements.txt ./
 
 # Installing dependencies
 RUN apk update && \
-	apk add --virtual .build-deps alpine-sdk && \
+	apk add --virtual build-deps python-dev build-base &&\
 	apk add libc6-compat && \
-	pip install --no-cache-dir -r requirements.txt && \
-	apk del .build-deps
+	pip install --no-cache-dir -r requirements.txt &&\
+	apk del build-deps
 
 # Copying the complete source code to the work directory
 COPY . .
