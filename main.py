@@ -292,8 +292,8 @@ def create_sales(customer_email, sales_obj, salesman_email):
 
 # Creating store node.
 def create_store(store_obj):
-    print("store_obj: ", sales_obj)
-    store_name = sales_obj['store.name']
+    print("store_obj: ", store_obj)
+    store_name = store_obj['store.name']
     store_uid = get_uid_obj("store.name", store_name)
     if store_uid is not None:
         print("WARN: Store with name ", store_name, " already exists with uid <", store_uid, ">")
@@ -507,21 +507,21 @@ def salesman_referrals():
 def store_creation():
     request_json = request.get_json(force=True)
     print("request_json: ", request_json)
-    uid = store = location = ""
+    uid = store_name = location = ""
     if request_json is None:
         return json_response({
             "status": "error",
             "error": "no payload found"
         })
-    if not('store' in request_json and 'location' in request_json):
+    if not('store_name' in request_json and 'location' in request_json):
         return json_response({
             "status": "error",
             "error": "not all required data provided"
         })
-    store = request_json["store"]
+    store_name = request_json["store_name"]
     location = request_json["location"]
     store_obj = {
-        "store.name": store,
+        "store.name": store_name,
         "location": location
     }
     uid = create_store(store_obj)
