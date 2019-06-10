@@ -25,6 +25,15 @@ client = create_client()
 NO_UID_OBJ = [ None, False ]
 
 
+# Removes dot from key of an object
+def removeDotFromKey(myobj):
+    newobj={}
+    for key in myobj:
+        myArray = key.split(".")
+        temp = myArray[len(myArray)-1]
+        newobj[temp] = myobj[key]
+    return newobj
+
 # Drop All - discard all data and start from a clean slate.
 def drop_all():
     op = pydgraph.Operation(drop_all=True)
@@ -360,7 +369,7 @@ def getuid():
     return json_response({
         "status": "success",
         "message": "successfully fetched uid",
-        "data": uid_obj
+        "data": removeDotFromKey(uid_obj)
     })
 
 # Deletes a node based on reference/value.
@@ -465,7 +474,7 @@ def register():
     return json_response({
         "status": "success",
         "message": "successfully created new salesman",
-        "data": salesman_object
+        "data": removeDotFromKey(salesman_object)
     })
 
 # Queries a new Salesman Node.
@@ -502,7 +511,7 @@ def query():
         })
     response = {
         "status": "success",
-        "data": query_response
+        "data": removeDotFromKey(query_response)
     }
     return json_response(response)
 
@@ -541,13 +550,13 @@ def store_creation():
         return json_response({
             "status": "warning",
             "message": "store name already exists",
-            "data": store_obj
+            "data": removeDotFromKey(store_obj)
         })
     store_obj['uid'] = res['uid']
     return json_response({
         "status": "success",
         "message": "successfully created store",
-        "data": store_obj
+        "data": removeDotFromKey(store_obj)
     })
 
 # Creating a new Sales Node and child nodes
@@ -613,7 +622,7 @@ def sales():
     return json_response({
         "status": "success",
         "message": "successfully created sales under a salesman",
-        "data": sales_obj
+        "data": removeDotFromKey(sales_obj)
     })
 
 # Creates Salesman Node.
@@ -649,7 +658,7 @@ def create_customer():
         return json_response({
             "status": "warning",
             "message": "customer with the provided email id already exists",
-            "data": res
+            "data": removeDotFromKey(res)
         })
     uids = create_data(myobj=customer_object)
     print("uids: ", uids)
@@ -664,7 +673,7 @@ def create_customer():
     return json_response({
         "status": "success",
         "message": "successfully created new salesman",
-        "data": customer_object
+        "data": removeDotFromKey(customer_object)
     })
 
 
