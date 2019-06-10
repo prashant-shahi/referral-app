@@ -1,9 +1,9 @@
 const graphql = require('graphql');
 const axios = require('axios');
 
-const { 
+const {
     GraphQLObjectType,
-    GraphQLString, 
+    GraphQLString,
     GraphQLSchema,
     GraphQLID,
     GraphQLInt,
@@ -17,10 +17,10 @@ const Sales = new GraphQLObjectType({
         uid: {type: GraphQLID },
         invoice_no: {type: GraphQLInt},
         item: {type: GraphQLString},
-        quantity: {type: GraphQLInt},        
+        quantity: {type: GraphQLInt},
         price: {type: GraphQLInt},
-        store: {type: GraphQLString},  
-        total_amount: {type: GraphQLInt},    
+        store: {type: GraphQLString},
+        total_amount: {type: GraphQLInt},
     })
 });
 
@@ -32,9 +32,7 @@ const SalesMan = new GraphQLObjectType({
         age: {type: GraphQLInt},
         email: {type: GraphQLString},
         sold: {type: new GraphQLList(Sales)},
-        referred: {
-            type: new GraphQLList(SalesMan)
-        }
+        referred: {type: new GraphQLList(SalesMan)}
     })
 });
 
@@ -47,9 +45,9 @@ const RootQuery = new GraphQLObjectType({
                 email: {type: GraphQLString}
             },
             resolve(parent, args) {
-                // resolves the specific fields in query to values                                    
+                // resolves the specific fields in query to values
                 const person = axios.post('http://192.168.1.117:5000/salesman',{'email':args.email})
-                .then((response) => {                    
+                .then((response) => {
                     const data = response.data.data.all[0];
                     //data['age']='77';
                     console.log(data)
@@ -69,11 +67,11 @@ const RootQuery = new GraphQLObjectType({
             },
             resolve(parent, args){
                 // resolves the specific fields in query to values
-                console.log(args.email); 
+                console.log(args.email);
                 const person = axios.post('http://192.168.1.117:5000/salesman',{'email':args.email})
-                .then((response) => {                    
+                .then((response) => {
                     const data = response.data.data.all[0];
-                    delete data['referred'];                    
+                    delete data['referred'];
                     console.log(data)
                     return data;
                 })
@@ -84,7 +82,6 @@ const RootQuery = new GraphQLObjectType({
                 return person;
             }
         },
-        
     }
 });
 
@@ -170,7 +167,6 @@ const Mutation = new GraphQLObjectType({
                 return response_obj;
             }
         },
-
     }
 })
 
