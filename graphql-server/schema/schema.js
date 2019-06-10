@@ -88,6 +88,93 @@ const RootQuery = new GraphQLObjectType({
     }
 });
 
+const Mutation = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: {
+        addSalesMan:{
+            type: SalesMan,
+            args: {
+                name: {type: new GraphQLNonNull(GraphQLString)},
+                age: {type: new GraphQLNonNull(GraphQLInt)},
+                email: {type: new GraphQLNonNull(GraphQLString)},
+                referrer: {type: GraphQLString },
+            },
+            resolve(parent, args) {
+                // resolves the specific fields in query to values
+                payload = {
+                    name: args.name,
+                    age: args.age,
+                    email: args.email,
+                    referrer: args.referrer
+                }
+                const response_obj = axios.post('http://192.168.1.117:5000/create-salesman', payload)
+                .then((response) => {
+                    const data = response.data;
+                    if(data['status']==="success") {
+                        console.log(data)
+                        return data.data;
+                    } else {
+                        console.log("Error: ", data['error'])
+                        return data
+                    }
+                })
+                .catch((error) => {
+                    // handle error
+                    console.log("ERROR: ", error);
+                    return  {
+                        status: "error",
+                        error: error
+                    };
+                })
+                return response_obj;
+            }
+        },
+        addSales:{
+            type: Sales,
+            args: {
+                item: {type: new GraphQLNonNull(GraphQLString)},
+                store: {type: new GraphQLNonNull(GraphQLString)},
+                price: {type: new GraphQLNonNull(GraphQLInt)},
+                quantity: {type: new GraphQLNonNull(GraphQLInt)},
+                salesman_email: {type: new GraphQLNonNull(GraphQLString)},
+            },
+            resolve(parent, args){
+                // resolves the specific fields in query to values
+                payload = {
+                    item: args.item,
+                    store: args.store,
+                    price: args.price,
+                    quantity: args.quantity,
+                    salesman_email: args.salesman_email
+                }
+                const response_obj = axios.post('http://192.168.1.117:5000/create-sales', payload)
+                .then((response) => {
+                    console.log("response: ", response)
+                    var data = response.data;
+                    if(data.status=="success") {
+                        console.log("data: ", data)
+                        return data.data;
+                    } else {
+                        console.log("Error: ", data.error)
+                        return data
+                    }
+                })
+                .catch((error) => {
+                    // handle error
+                    console.log("ERROR: ", error);
+                    return {
+                        status: "error",
+                        error: error
+                    };
+                })
+                return response_obj;
+            }
+        },
+
+    }
+})
+
 module.exports = new GraphQLSchema({
-    query: RootQuery
+    query: RootQuery,
+    mutation: Mutation
 })
