@@ -8,7 +8,7 @@
 	},
 	"item": [
 		{
-			"name": "GET / check server status",
+			"name": "/ - check server status",
 			"request": {
 				"url": "localhost:5000/",
 				"method": "GET",
@@ -19,7 +19,7 @@
 			"response": []
 		},
 		{
-			"name": "GET /setup - clear all old data and load the data",
+			"name": "/setup - clear all old data and load the data",
 			"request": {
 				"url": "localhost:5000/setup",
 				"method": "GET",
@@ -34,24 +34,16 @@
 			"request": {
 				"url": "localhost:5000/salesman",
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "email",
-							"value": "alan@gmail.com",
-							"type": "text",
-							"description": ""
-						},
-						{
-							"key": "id",
-							"value": "0x102d10",
-							"description": "",
-							"type": "text",
-							"disabled": true
-						}
-					]
+					"mode": "raw",
+					"raw": "{\n\t\"uid\": \"0x2f0118\"\n}"
 				},
 				"description": ""
 			},
@@ -62,17 +54,16 @@
 			"request": {
 				"url": "localhost:5000/referrals",
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/javascript",
+						"description": ""
+					}
+				],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "email",
-							"value": "alan@gmail.com",
-							"description": "",
-							"type": "text"
-						}
-					]
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"alan@gmail.com\"\n}"
 				},
 				"description": "Now, it can be achieved by GET /salesman API"
 			},
@@ -81,49 +72,38 @@
 		{
 			"name": "/create-sales - Creating sales wrt salesman",
 			"request": {
-				"url": "localhost:5000/sales",
+				"url": "localhost:5000/create-sales",
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "invoice_no",
-							"value": "123456789",
-							"type": "text",
-							"description": ""
-						},
-						{
-							"key": "item",
-							"value": "Milton AQUA Bottle",
-							"type": "text",
-							"description": ""
-						},
-						{
-							"key": "store",
-							"value": "Home and Kitchen Applicances",
-							"type": "text",
-							"description": ""
-						},
-						{
-							"key": "price",
-							"value": "750",
-							"type": "text",
-							"description": ""
-						},
-						{
-							"key": "quantity",
-							"value": "3",
-							"type": "text",
-							"description": ""
-						},
-						{
-							"key": "salesman",
-							"value": "alan@gmail.com",
-							"type": "text",
-							"description": ""
-						}
-					]
+					"mode": "raw",
+					"raw": "{\n\t\"item\": \"360 VR Kit\",\n\t\"store\": \"Electronics Shop\",\n\t\"location\": \"KR Market\",\n\t\"price\": 450,\n\t\"quantity\": 4,\n\t\"categories\": [\"Electronics\", \"Headgears\", \"Mobile Acessories\"],\n\t\"salesman_email\": \"alan@gmail.com\",\n\t\"customer_email\": \"racheal@gmail.com\"\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/create-store - Creating store node",
+			"request": {
+				"url": "localhost:5000/create-store",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"store_name\": \"AB Mobile Shop\",\n\t\"location\": \"SP Market\"\n}"
 				},
 				"description": ""
 			},
@@ -134,24 +114,16 @@
 			"request": {
 				"url": "localhost:5000/fetch-sales",
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "email",
-							"value": "alan@gmail.com",
-							"description": "",
-							"type": "text",
-							"disabled": true
-						},
-						{
-							"key": "id",
-							"value": "0x102d10",
-							"description": "",
-							"type": "text"
-						}
-					]
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"alan@gmail.com\"\n}"
 				},
 				"description": "Now, it can be achieved using GET /salesman API"
 			},
@@ -162,37 +134,38 @@
 			"request": {
 				"url": "localhost:5000/create-salesman",
 				"method": "POST",
-				"header": [],
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
 				"body": {
-					"mode": "formdata",
-					"formdata": [
-						{
-							"key": "name",
-							"value": "Glen",
-							"description": "",
-							"type": "text"
-						},
-						{
-							"key": "email",
-							"value": "glen@gmail.com",
-							"description": "",
-							"type": "text"
-						},
-						{
-							"key": "age",
-							"value": "23",
-							"description": "",
-							"type": "text"
-						},
-						{
-							"key": "referrer",
-							"value": "bob@gmail.com",
-							"description": "",
-							"type": "text"
-						}
-					]
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"Glen\",\n\t\"email\": \"glen@gmail.com\",\n\t\"age\": 23,\n\t\"referrer\": \"bob@gmail.com\"\n}"
 				},
 				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "/get-uid  -  Generic uid fetching api",
+			"request": {
+				"url": "localhost:5000/get-uid",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"reference\": \"salesman.name\",\n\t\"value\": \"Alan\"\n}"
+				},
+				"description": "Fetch uid wrt any reference and value"
 			},
 			"response": []
 		}
