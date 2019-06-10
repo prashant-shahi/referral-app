@@ -376,7 +376,7 @@ def delete_node():
                 "error": "no payload found"
             })
         uid = reference = value = ""
-        if 'uid' not in request_json:
+        if not('uid' in request_json):
             if 'reference' in request_json:
                 reference = request_json["reference"]
             if 'value' in request_json:
@@ -417,14 +417,10 @@ def register():
             "status": "error",
             "error": "no payload found"
         })
-    try:
-        name = request_json["name"]
-        email = request_json["email"]
-        age = request_json["age"]
-        referrer = request_json["referrer"]
-    except Exception as err:
-        pass
-        print(datetime.datetime.now(), "Error: not all required data provided")
+    name = request_json.get("name")
+    email = request_json.get("email")
+    age = int(request_json.get("age", 0))
+    referrer = request_json.get("referrer")
     if not(name and email and age):
         return json_response({
             "status": "error",
@@ -458,13 +454,14 @@ def register():
         }
     print("New user object: ", new_obj)
     uids = create_data(myobj=new_obj)
-    if 'blank-0' not in uids:
+    print("uids: ", uids)
+    uid = uids.get('blank-0')
+    if uid is None:
         return json_response({
             "status": "error",
             "error": "unable to create salesman node"
         })
-    uid = uids['blank-0']
-    salesman_object['uid'] = uids['uid']
+    salesman_object['uid'] = uid
     return json_response({
         "status": "success",
         "message": "successfully created new salesman",
@@ -632,7 +629,7 @@ def create_customer():
     try:
         name = request_json["name"]
         email = request_json["email"]
-        age = request_json["age"]
+        age = int(request_json["age"])
     except Exception as err:
         pass
         print(datetime.datetime.now(), "Error: not all required data provided")
@@ -655,13 +652,15 @@ def create_customer():
             "data": res
         })
     uids = create_data(myobj=customer_object)
-    if 'blank-0' not in uids:
+    print("uids: ", uids)
+    uid = uids.get('blank-0')
+    if uid is None:
         return json_response({
             "status": "error",
             "error": "unable to create salesman node"
         })
-    uid = uids['blank-0']
-    customer_object['uid'] = uids['uid']
+    customer_object['uid'] = uid
+    print("customer_object: ", customer_object)
     return json_response({
         "status": "success",
         "message": "successfully created new salesman",
