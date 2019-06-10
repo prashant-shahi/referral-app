@@ -4,6 +4,7 @@ from flask import Flask, flash, render_template, redirect, request, url_for, Res
 import random
 import datetime
 from string import Template
+import re
 
 app = Flask(__name__)
 
@@ -27,12 +28,11 @@ NO_UID_OBJ = [ None, False ]
 
 # Removes dot from key of an object
 def removeDotFromKey(myobj):
-    newobj={}
-    for key in myobj:
-        myArray = key.split(".")
-        temp = myArray[len(myArray)-1]
-        newobj[temp] = myobj[key]
-    return newobj
+    obj_str = json.dumps(myobj)
+    new_str=re.sub(r'"(\w+).(name|age|email)"', r'"\2"', obj_str)
+    newobj = json.loads(new_str)
+    print("newobj: ", newobj)
+    return myobj
 
 # Drop All - discard all data and start from a clean slate.
 def drop_all():
@@ -361,6 +361,7 @@ def getuid():
     if 'value' in request_json:
         value = request_json["value"]
     uid_obj = get_uid_obj(reference, value)
+    print("uid_obj: ",uid_obj)
     if uid_obj is None:
         return json_response({
             "status": "error",
@@ -509,9 +510,17 @@ def query():
             "status": "error",
             "error": "no salesman found with specified email"
         })
+    query = json.dumps(query_response)
+    print("query: ",query)
+    # query=re.sub(r'"\w+.name"','"name"',query)
+    # query=re.sub(r'"\w+.age"','"age"',query)
+    # query=re.sub(r'"\w+.email"','"email"',query)
+    new_query=re.sub(r'"(\w+).(name|age|email)"', r'"\2"', query)
+    newobj = json.loads(new_query)
+    print("newobj: ", newobj)
     response = {
         "status": "success",
-        "data": removeDotFromKey(query_response)
+        "data": newobj
     }
     return json_response(response)
 
@@ -578,8 +587,8 @@ def sales():
     quantity = int(request_json.get("quantity", 0))
     salesman_email = request_json.get("salesman_email")
     customer_email = request_json.get("customer_email")
-    categories = request_json.get("categories")
-    total_amount = int(request_json.get("total_amount", 0))
+    categories = request_json.get("category")
+    total_amount = int(request_json.get("total_amount", price*quantity))
     if not(item and store and salesman_email and customer_email and categories):
         return json_response({
             "status": "error",
@@ -588,16 +597,24 @@ def sales():
     if not invoice_no:
         invoice_no = random.sample(range(1, 9999999), 1)[0]
     category = []
+    out_category = []
+    output_obj = {}
+    print("categories: ", categories)
     for cat in categories:
         cat_uid = get_uid_obj("category.name", cat);
         if cat_uid is None or cat_uid is False:
-            category.append(dict({'category.name': cat}))
+            category.append({'category.name': cat})
+            out_category.append({'name': cat})
         else:
-            category.append(dict({'uid': cat_uid["uid"]}))
+            category.append({'uid': cat_uid["uid"]})
+            out_category.append({'uid': cat_uid["uid"], 'name': cat})
     store_uid = get_uid_obj("store.name", store);
+    out_store = {"uid": store_uid["uid"],"name": store,"location": location} if store_uid else {"name": store,"location": location}
     store = {"uid": store_uid["uid"]} if store_uid else {"store.name": store,"location": location}
     product_uid = get_uid_obj("product.name", item);
+    out_item = {"uid": product_uid["uid"], 'name': item}  if product_uid else {"name": item}
     item = {"uid": product_uid["uid"]} if product_uid else {"product.name": item}
+    print("category: ", category)
     item["category"] = category
     sales_obj = {
         "invoice_no": invoice_no,
@@ -607,6 +624,18 @@ def sales():
         "quantity": quantity,
         "total_amount": total_amount
     }
+    print("out_category: ", out_category)
+    out_item['category']=out_category
+    output_obj = {
+        "invoice_no": invoice_no,
+        "item": out_item,
+        "store": out_store,
+        "price": price,
+        "quantity": quantity,
+        "total_amount": total_amount
+    }
+    print("\noutput_obj: ", str(output_obj))
+    print("\nsales_obj: ", str(sales_obj))
     uid = create_sales(customer_email, sales_obj, salesman_email)
     if uid is None:
         return json_response({
@@ -622,7 +651,7 @@ def sales():
     return json_response({
         "status": "success",
         "message": "successfully created sales under a salesman",
-        "data": removeDotFromKey(sales_obj)
+        "data": output_obj
     })
 
 # Creates Salesman Node.
@@ -635,13 +664,9 @@ def create_customer():
             "status": "error",
             "error": "no payload found"
         })
-    try:
-        name = request_json["name"]
-        email = request_json["email"]
-        age = int(request_json["age"])
-    except Exception as err:
-        pass
-        print(datetime.datetime.now(), "Error: not all required data provided")
+    name = request_json.get("name")
+    email = request_json.get("email")
+    age = int(request_json.get("age", 0))
     if not(name and email and age):
         return json_response({
             "status": "error",
