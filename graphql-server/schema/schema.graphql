@@ -1,27 +1,63 @@
+type Category {
+    uid: String
+    name: String
+}
+
+type Product {
+    uid: String
+    name: String
+    category: [Category]
+}
+
+type Store {
+    uid: String
+    name: String
+    location: String
+}
+
 type Sales {
-    uid: Int
+    uid: String
     invoice_no: Int
-    item: String
+    item: [Product]
     quantity: Int
     price: Int
-    store: String
+    store: [Store]
     total_amount: Int
 }
 
-type  SalesMan {
-    uid: Int
+type SalesMan {
+    uid: String
     name: String
     age: Int
     email: String
     sold: [Sales]
-    referred:  [SalesMan]
+    referred: [SalesMan]
+}
+
+type Customer {
+    uid: String
+    name: String
+    age: Int
+    email: String
+    bought: [Sales]
+}
+
+type Response {
+    status: String
+    message: String
+    error: String
 }
 
 type Query {
     salesman(email: String): SalesMan
+
+    customer(email: String): Customer
+    Sales(email: String): Sales
 }
 
 type Mutation {
-    addsalesman(name:String, age:Int, email:String, referrer:String): SalesMan
-    addsales(item:String, store:String, price:Int, quantity:Int, salesman_email:String): Sales 
+    addsalesman (name:String!, age:Int!, email:String!, referrer:String): SalesMan
+    addcustomer (name:String!, age:Int!, email:String!): Customer
+    addsales (invoice_no:Int,  item:String!, store:String!, location:String, category:[String], price:Int, quantity:Int, total_amount:Int, salesman_email:String!, customer_email:String!): Sales
+    deletenode (reference:String!, value:String!): Response
 }
