@@ -2,7 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Ignore intermediate files
+node_modules
 *.DS_Store
+package-lock.json
 
 # C extensions
 *.so
