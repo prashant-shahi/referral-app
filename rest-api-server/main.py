@@ -22,6 +22,7 @@ def close_client_stub():
 
 client_stub = create_client_stub()
 client = create_client()
+NO_UID_OBJ = [ None, False ]
 
 
 # Drop All - discard all data and start from a clean slate.
@@ -51,7 +52,7 @@ def set_schema(schema=None):
 
 # Create data using JSON.
 # If myobj parameter is not passed, loads the sample data.
-def create_data(myobj=None):
+def create_data(myobj=None, reference=None):
     print("In create_data func")
     # Create a new transaction.
     txn = client.txn()
@@ -61,6 +62,13 @@ def create_data(myobj=None):
             print("No myobj found. Loading the sample.")
             myobj = load_sample();
             print("create_data myobj: ", myobj)
+
+        if reference:
+            value = myobj[reference]
+            object_uid = get_uid_obj(reference, value)
+            print("create_data object_uid: ", object_uid)
+            if isinstance(object_uid, dict):
+                return object_uid
 
         # Run mutation.
         assigned = txn.mutate(set_obj=myobj)
@@ -207,7 +215,7 @@ def get_uid_obj(reference=None, value=None):
         res = client.txn(read_only=True).query(query)
         query_response = json.loads(res.json)
         if len(query_response['get_uid']) <= 0:
-            return
+            return False
         print("query_response: ", query_response)
         uid_obj = query_response['get_uid'][0]
         print("uid_obj: ", uid_obj)
@@ -223,30 +231,42 @@ def create_sales(customer_email, sales_obj, salesman_email):
     print("customer email: ", customer_email)
     salesman_uid = get_uid_obj("salesman.email", salesman_email)
     customer_uid = get_uid_obj("customer.email", customer_email)
-    if salesman_uid is None or customer_uid is None:
+    if salesman_uid in NO_UID_OBJ or customer_uid in NO_UID_OBJ:
         print(datetime.datetime.now(), " INFO either salesman or customer not pre-registered")
-        return
+        return False
     s_uid, c_uid = salesman_uid['uid'], customer_uid['uid']
+    sales_uids = create_data(myobj=sales_obj)
+    print("sales_uids: ", sales_uids)
+    if sales_uids is None or len(sales_uids)<=0:
+        return
+    sales_uid = sales_uids['blank-0']
+    print("sales_uid: ", sales_uid)
+    print("type(sales_uid): ", type(sales_uid))
     myobj = {
-        "uid": salesman_uid,
-        "sold": sales_obj
+        "uid": s_uid,
+        "sold": {
+            "uid": sales_uid
+        }
     }
-    print("salesman create_sales myobj: ", myobj)
+    print("customer-sales edge")
+    print("customer create_sales myobj: ", myobj)
     uids = create_data(myobj=myobj)
     uid = uids['blank-0']
     if uids is None or len(uids)<=0:
         return
+    print("salesman-sales edge")
+    print("salesman create_sales myobj: ", myobj)
     myobj = {
-        "uid": customer_uid,
+        "uid": c_uid,
         "bought": {
-            "uid": uid
+            "uid": sales_uid
         }
     }
-    print("customer create_sales myobj: ", myobj)
     uids = create_data(myobj=myobj)
-    if uids is None and len(uids)<=0:
+    uid = uids['blank-0']
+    if uids is None or len(uids)<=0:
         return
-    return uid
+    return sales_uid
 
 # (Deprecated) Creating store node.
 def create_store(store_obj):
@@ -266,14 +286,17 @@ def create_store(store_obj):
 # Generic node creation.
 def create(myobj, reference):
     print("create myobj: ", myobj)
-    value = myobj[reference]
-    object_uid = get_uid_obj(reference, value)
-    uid = ""
-    if object_uid is not None:
-        uid = object_uid['uid']
-        print("WARN: Node with ", reference, " = ", value, " already exists with uid <", uid, ">")
+    uids = create_data(myobj, reference)
+    print("uids: ", uids)
+    print("type(uids): ", type(uids))
+    if uids is None:
+        return
+    if 'uid' in uids:
+        uid = uids['uid']
+        print("INFO \t Node with ", reference, " = ", myobj[reference], " already exists with uid <", uid, ">")
         return uid
-    uids = create_data(myobj=myobj)
+    if not('blank-0' in uids):
+        return
     uid = uids['blank-0']
     myobj['uid'] = uid
     print("myobj: ", myobj)
@@ -340,6 +363,50 @@ def getuid():
         "data": uid_obj
     })
 
+# Deletes a node based on reference/value.
+@app.route("/delete-node", methods=["POST"])
+def delete_node():
+    txn = client.txn()
+    try:
+        request_json = request.get_json(force=True)
+        print("request_json: ", request_json)
+        if request_json is None:
+            return json_response({
+                "status": "error",
+                "error": "no payload found"
+            })
+        uid = reference = value = ""
+        if 'uid' not in request_json:
+            if 'reference' in request_json:
+                reference = request_json["reference"]
+            if 'value' in request_json:
+                value = request_json["value"]
+            uid_obj = get_uid_obj(reference, value)
+            if uid_obj is None:
+                return json_response({
+                    "status": "error",
+                    "error": "couldn't fetch uid to perform deletion"
+                })
+            if uid_obj is False:
+                return json_response({
+                    "status": "error",
+                    "error": "no node found with the provided specification"
+                })
+            uid = uid_obj['uid']
+        else:
+            uid = request_json['uid']
+        node_obj = {
+            'uid': uid
+        }
+        assigned = txn.mutate(del_obj=node_obj)
+        txn.commit()
+    finally:
+        txn.discard()
+    return json_response({
+        "status": "success",
+        "message": "Node with uid <"+uid+"> successfully deleted"
+    })
+
 # Creates Salesman Node.
 @app.route("/create-salesman", methods=['POST'])
 def register():
@@ -350,7 +417,6 @@ def register():
             "status": "error",
             "error": "no payload found"
         })
-    uid = name = email = age = referrer = ""
     try:
         name = request_json["name"]
         email = request_json["email"]
@@ -369,38 +435,43 @@ def register():
         'salesman.name': name,
         'salesman.age': age,
     }
-    user_obj = salesman_object
-    if referrer is not None:
-        uid_obj = get_uid_obj("salesman.email", referrer)
-        uid = uid_obj['uid']
-        print("uid: ", uid)
-        if uid is None:
+    res = get_uid_obj("salesman.email", email)
+    print("res: ", res)
+    if isinstance(res, dict):
+        return json_response({
+            "status": "warning",
+            "message": "salesman with the provided email id already exists",
+            "data": res
+        })
+    new_obj = salesman_object
+    if referrer:
+        referrer_obj = get_uid_obj("salesman.email", referrer)
+        if referrer_obj is None or not(isinstance(referrer_obj, dict)):
             return json_response({
                 "status": "error",
-                "error": "invalid referrer id"
+                "error": "error occurred while fetching referrer id"
             })
-        salesman_object = {
-            "uid": uid,
-            "referred": user_obj
+        referrer_uid = referrer_obj['uid']
+        new_obj = {
+            'uid': referrer_uid,
+            'referred': salesman_object
         }
-    print("New user object: ", salesman_object)
-    uids = create_data(salesman_object)
-    if uids is None:
+    print("New user object: ", new_obj)
+    uids = create_data(myobj=new_obj)
+    if 'blank-0' not in uids:
         return json_response({
             "status": "error",
-            "error": "error occurred while creating the salesman"
+            "error": "unable to create salesman node"
         })
-    print("uids: ", uids)
-    if uids is not None and len(uids)>0:
-        uid = uids['blank-0']
-        user_obj['uid'] = uid
+    uid = uids['blank-0']
+    salesman_object['uid'] = uids['uid']
     return json_response({
         "status": "success",
-        "message": "new salesman successfully registered",
-        "data": user_obj
+        "message": "successfully created new salesman",
+        "data": salesman_object
     })
 
-# Creates Salesman Node.
+# Queries a new Salesman Node.
 @app.route("/salesman", methods=['POST'])
 def query():
     request_json = request.get_json(force=True)
@@ -427,12 +498,18 @@ def query():
             "status": "error",
             "error": "invalid arguments passed"
         })
+    if 'all' in query_response and len(query_response['all'])<=0:
+        return json_response({
+            "status": "error",
+            "error": "no salesman found with specified email"
+        })
     response = {
         "status": "success",
         "data": query_response
     }
     return json_response(response)
 
+# Creating a new Store Node.
 @app.route("/create-store", methods=['POST'])
 def store_creation():
     request_json = request.get_json(force=True)
@@ -454,12 +531,13 @@ def store_creation():
         "store.name": store_name,
         "location": location
     }
+    print("store_obj: ", store_obj)
     res = create(store_obj, reference='store.name')
     print("res: ", res)
     if res is None:
         return json_response({
             "status": "error",
-            "error": "error while creating store"
+            "error": "error while creating new store"
         })
     elif isinstance(res, str) or isinstance(res, unicode):
         store_obj['uid'] = res
@@ -475,6 +553,8 @@ def store_creation():
         "data": store_obj
     })
 
+# Creating a new Sales Node and child nodes
+# If child nodes are already present, sales node simply creates an edge to/from 
 @app.route("/create-sales", methods=['POST'])
 def sales():
     request_json = request.get_json(force=True)
@@ -484,54 +564,42 @@ def sales():
             "status": "error",
             "error": "no payload found"
         })
-    uid = email = item = store = price = quantity = ""
-    if not('item' in request_json and 'location' in request_json and 'store' in request_json and 'customer_email' in request_json and 'salesman_email' in request_json and 'price' in request_json and 'quantity' in request_json  and 'categories' in request_json):
+    invoice_no = request_json.get("invoice_no")
+    item = request_json.get("item")
+    store = request_json.get("store")
+    location = request_json.get("location")
+    price = int(request_json.get("price", 0))
+    quantity = int(request_json.get("quantity", 0))
+    salesman_email = request_json.get("salesman_email")
+    customer_email = request_json.get("customer_email")
+    categories = request_json.get("categories")
+    total_amount = int(request_json.get("total_amount", 0))
+    if not(item and store and salesman_email and customer_email and categories):
         return json_response({
             "status": "error",
-            "error": "not all required data provided"
+            "error": "required fields not provided"
         })
-    item = request_json["item"]
-    store = request_json["store"]
-    location = request_json["location"]
-    price = int(request_json["price"])
-    quantity = int(request_json["quantity"])
-    salesman_email = request_json["salesman_email"]
-    customer_email = request_json["customer_email"]
-    categories = request_json["categories"]
-    if price <= 0 and quantity <=0:
-        return json_response({
-            "status": "error",
-            "error": "price and quantity should be positive"
-        })
-    invoice_no = random.sample(range(1, 9999999), 1)[0]
-    category_list = []
+    if not invoice_no:
+        invoice_no = random.sample(range(1, 9999999), 1)[0]
+    category = []
     for cat in categories:
         cat_uid = get_uid_obj("category.name", cat);
-        if cat_uid is None:
-            category_list.append(dict({'category.name': cat}))
+        if cat_uid is None or cat_uid is False:
+            category.append(dict({'category.name': cat}))
         else:
-            category_list.append(dict({'uid': cat_uid["uid"]}))
+            category.append(dict({'uid': cat_uid["uid"]}))
     store_uid = get_uid_obj("store.name", store);
-    if store_uid is not None:
-        store = {
-            "uid": store_uid["uid"]
-        }
-    else:
-        store = {
-            "store.name": store,
-            "location": location
-        }
-    print("category_list: ", category_list)
+    store = {"uid": store_uid["uid"]} if store_uid else {"store.name": store,"location": location}
+    product_uid = get_uid_obj("product.name", item);
+    item = {"uid": product_uid["uid"]} if product_uid else {"product.name": item}
+    item["category"] = category
     sales_obj = {
         "invoice_no": invoice_no,
-        "item": {
-            "product.name": item,
-            "category": category_list,
-        },
+        "item": item,
         "store": store,
         "price": price,
         "quantity": quantity,
-        "total_amount": price*quantity
+        "total_amount": total_amount
     }
     uid = create_sales(customer_email, sales_obj, salesman_email)
     if uid is None:
@@ -539,11 +607,65 @@ def sales():
             "status": "error",
             "error": "error occurred while creating sales"
         })
+    if uid is False:
+        return json_response({
+            "status": "error",
+            "error": "customer/salesman is not pre-registered"
+        })
     sales_obj['uid'] = uid
     return json_response({
         "status": "success",
         "message": "successfully created sales under a salesman",
         "data": sales_obj
+    })
+
+# Creates Salesman Node.
+@app.route("/create-customer", methods=['POST'])
+def create_customer():
+    request_json = request.get_json(force=True)
+    print("request_json: ", request_json)
+    if request_json is None:
+        return json_response({
+            "status": "error",
+            "error": "no payload found"
+        })
+    try:
+        name = request_json["name"]
+        email = request_json["email"]
+        age = request_json["age"]
+    except Exception as err:
+        pass
+        print(datetime.datetime.now(), "Error: not all required data provided")
+    if not(name and email and age):
+        return json_response({
+            "status": "error",
+            "error": "not all required data provided"
+        })
+    customer_object = {
+        'customer.email': email,
+        'customer.name': name,
+        'customer.age': age,
+    }
+    res = get_uid_obj("customer.email", email)
+    print("res: ", res)
+    if isinstance(res, dict):
+        return json_response({
+            "status": "warning",
+            "message": "customer with the provided email id already exists",
+            "data": res
+        })
+    uids = create_data(myobj=customer_object)
+    if 'blank-0' not in uids:
+        return json_response({
+            "status": "error",
+            "error": "unable to create salesman node"
+        })
+    uid = uids['blank-0']
+    customer_object['uid'] = uids['uid']
+    return json_response({
+        "status": "success",
+        "message": "successfully created new salesman",
+        "data": customer_object
     })
 
 
