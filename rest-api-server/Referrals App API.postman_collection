@@ -43,7 +43,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"uid\": \"0x2f0118\"\n}"
+					"raw": "{\n\t\"email\": \"alan@gmail.com\"\n}"
 				},
 				"description": ""
 			},
@@ -83,7 +83,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"item\": \"360 VR Kit\",\n\t\"store\": \"Electronics Shop\",\n\t\"location\": \"KR Market\",\n\t\"price\": 450,\n\t\"quantity\": 4,\n\t\"categories\": [\"Electronics\", \"Headgears\", \"Mobile Acessories\"],\n\t\"salesman_email\": \"alan@gmail.com\",\n\t\"customer_email\": \"racheal@gmail.com\"\n}"
+					"raw": "{\n\t\"invoice_no\": \"567\",\n\t\"item\": \"360 VR Kit\",\n\t\"store\": \"Electronics Shop\",\n\t\"location\": \"KR Market\",\n\t\"price\": 450,\n\t\"quantity\": 4,\n\t\"categories\": [\"Electronics\", \"Headgears\", \"Mobile Acessories\"],\n\t\"salesman_email\": \"alan@gmail.com\",\n\t\"customer_email\": \"racheal@gmail.com\"\n}"
 				},
 				"description": ""
 			},
@@ -150,6 +150,26 @@
 			"response": []
 		},
 		{
+			"name": "/create-salesman - Creating salesman with/without referral copy",
+			"request": {
+				"url": "localhost:5000/create-customer",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"name\": \"Ben\",\n\t\"email\": \"ben@gmail.com\",\n\t\"age\": 23\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
 			"name": "/get-uid  -  Generic uid fetching api",
 			"request": {
 				"url": "localhost:5000/get-uid",
@@ -166,6 +186,26 @@
 					"raw": "{\n\t\"reference\": \"salesman.name\",\n\t\"value\": \"Alan\"\n}"
 				},
 				"description": "Fetch uid wrt any reference and value"
+			},
+			"response": []
+		},
+		{
+			"name": "/delete-node - Deletes node",
+			"request": {
+				"url": "localhost:5000/delete-node",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"reference\": \"customer.name\",\n\t\"value\": \"Ben\"\n}"
+				},
+				"description": "Based on the reference and valuse, deletion of node is performed"
 			},
 			"response": []
 		}
