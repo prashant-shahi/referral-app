@@ -1,25 +1,14 @@
 const express = require('express');
 const graphqlHTTP =  require('express-graphql');
-const { buildSchema } = require('graphql');
 
-// Creates schema using GraphQL schema language
-var schema = buildSchema(`
-    type Query {
-        welcome: String
-    }
-`);
-
-// The root provides a resolver function for each API endpoint
-var root = {
-    welcome: () => 'Welcome to GraphQL world!',
-};  
+// Loading schema from the script
+const schema = require('./schema/schema.js');
 
 const app = express();
 
 // Setting route for GraphiQL at /graphql
 app.use('/graphql', graphqlHTTP({
     schema,
-    rootValue: root,
     graphiql:true
 }));
 
