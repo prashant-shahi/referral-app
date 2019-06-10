@@ -1,0 +1,27 @@
+type Sales {
+    uid: Int
+    invoice_no: Int
+    item: String
+    quantity: Int
+    price: Int
+    store: String
+    total_amount: Int
+}
+
+type  SalesMan {
+    uid: Int
+    name: String
+    age: Int
+    email: String
+    sold: [Sales]
+    referred:  [SalesMan]
+}
+
+type Query {
+    salesman(email: String): SalesMan
+}
+
+type Mutation {
+    addsalesman(name:String, age:Int, email:String, referrer:String): SalesMan
+    addsales(item:String, store:String, price:Int, quantity:Int, salesman_email:String): Sales 
+}
