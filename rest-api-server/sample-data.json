@@ -10,10 +10,10 @@
           "product.name": "Apple iPad Pro",
           "category": [
             {
-              "name": "Electronics"
+              "category.name": "Electronics"
             },
             {
-              "name": "Mobiles and Tablets"
+              "category.name": "Mobiles and Tablets"
             }
           ]
         }
@@ -42,10 +42,10 @@
               "product.name": "Beats by Dre Pro",
               "category": [
                 {
-                  "name": "Electronics"
+                  "category.name": "Electronics"
                 },
                 {
-                  "name": "Headphones"
+                  "category.name": "Headphones"
                 }
               ]
             }
@@ -74,7 +74,7 @@
               "store.name": "Ford EcoSport Titanium",
               "category": [
                 {
-                  "name": "Automobiles"
+                  "category.name": "Automobiles"
                 }
               ]
             }
@@ -96,10 +96,10 @@
               "product.name": "Beats by Dre Pro",
               "category": [
                 {
-                  "name": "Electronics"
+                  "category.name": "Electronics"
                 },
                 {
-                  "name": "Headphones"
+                  "category.name": "Headphones"
                 }
               ]
             }
