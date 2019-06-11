@@ -629,8 +629,8 @@ def sales():
     out_item['category']=out_category
     output_obj = {
         "invoice_no": invoice_no,
-        "item": out_item,
-        "store": out_store,
+        "item": [out_item],
+        "store": [out_store],
         "price": price,
         "quantity": quantity,
         "total_amount": total_amount
@@ -649,6 +649,7 @@ def sales():
             "error": "customer/salesman is not pre-registered"
         })
     sales_obj['uid'] = uid
+    output_obj['uid'] = uid
     return json_response({
         "status": "success",
         "message": "successfully created sales under a salesman",
