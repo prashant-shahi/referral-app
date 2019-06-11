@@ -33,7 +33,7 @@ def removeDotFromKey(myobj):
     new_str=re.sub(r'"(\w+).(name|age|email)"', r'"\2"', obj_str)
     newobj = json.loads(new_str)
     print("newobj: ", newobj)
-    return myobj
+    return newobj
 
 # Drop All - discard all data and start from a clean slate.
 def drop_all():

@@ -1,0 +1,57 @@
+_:salesman1 <salesman.name> "Monica" .
+_:salesman1 <salesman.age> "27" .
+_:salesman1 <salesman.email> "monica@gmail.com" .
+_:salesman1 <sold> _:sales1 .
+_:salesman1 <sold> _:sales3 .
+
+_:salesman2 <salesman.name> "Russ" .
+_:salesman2 <salesman.age> "26" .
+_:salesman2 <salesman.email> "russ@gmail.com" .
+_:salesman1 <referred> _:salesman2 .
+
+_:salesman3 <salesman.name> "Chandler" .
+_:salesman3 <salesman.age> "27" .
+_:salesman3 <salesman.email> "chandler@gmail.com" .
+_:salesman3 <sold> _:sales2 .
+_:salesman1 <referred> _:salesman3 .
+
+_:customer1 <customer.name> "Racheal" .
+_:customer1 <customer.email> "racheal@gmail.com" .
+_:customer1 <customer.age> "26" .
+_:customer1 <bought> _:sales1 .
+
+_:customer2 <customer.name> "Joey" .
+_:customer2 <customer.email> "joey@gmail.com" .
+_:customer2 <customer.email> "28" .
+_:customer2 <bought> _:sales2 .
+
+_:product1 <product.name> "Apple iPad (6th Generation)" .
+_:product1 <category> _:category1 .
+_:product1 <category> _:category2 .
+
+_:product2 <product.name> "Beats by Dre Pro" .
+_:product2 <category> _:category1 .
+_:product2 <category> _:category3 .
+
+_:product3 <product.name> "Ford EcoSport Titanium" .
+_:product3 <category> _:category4 .
+
+_:category1 <category.name> "Electronics" .
+_:category2 <category.name> "Mobiles and Tablets" .
+_:category3 <category.name> "Headphones" .
+_:category4 <category.name> "Automobile" .
+
+_:sales1 <item> _:product1 .
+_:sales1 <store> _:store1 .
+
+_:sales2 <item> _:product2 .
+_:sales2 <store> _:store1 .
+
+_:sales3 <item> _:product3 .
+_:sales3 <store> _:store2 .
+
+_:store1 <store.name> "Elysium Electronics" .
+_:store1 <location> "MG Road, Bangalore" .
+
+_:store2 <store.name> "Ford Showroom" .
+_:store2 <location> "Jayanagar, Bangalore" .
