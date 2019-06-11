@@ -1,0 +1,77 @@
+version: "3.2"
+services:
+  zero:
+    image: dgraph/dgraph:latest
+    volumes:
+      - type: volume
+        source: dgraph
+        target: /dgraph
+        volume:
+          nocopy: true
+    networks:
+      - referral-network
+    ports:
+      - 5080:5080
+      - 6080:6080
+    restart: on-failure
+    command: dgraph zero --my=zero:5080
+  server:
+    image: dgraph/dgraph:latest
+    volumes:
+      - type: volume
+        source: dgraph
+        target: /dgraph
+        volume:
+          nocopy: true
+    networks:
+      - referral-network
+    ports:
+      - 8080:8080
+      - 9080:9080
+    restart: on-failure
+    command: dgraph alpha --my=server:7080 --lru_mb=4096 --zero=zero:5080
+  ratel:
+    image: dgraph/dgraph:latest
+    volumes:
+      - type: volume
+        source: dgraph
+        target: /dgraph
+        volume:
+          nocopy: true
+    networks:
+      - referral-network
+    ports:
+      - 8000:8000
+    command: dgraph-ratel
+
+  rest-server:
+    build: ./rest-api-server/
+    environment:
+      - DGRAPH_SERVER=server:9080
+    restart: on-failure
+    networks:
+      - referral-network
+    ports:
+      - "5000:5000"
+    depends_on:
+      - server
+      - zero
+
+  graphql-server:
+    build: ./graphql-server
+    environment:
+      - REST_SERVER=rest-server:5000
+    restart: on-failure
+    networks:
+      - referral-network
+    ports:
+      - "4000:4000"
+    depends_on:
+      - rest-server
+
+volumes:
+  dgraph:
+
+networks:
+  referral-network:
+    driver: bridge

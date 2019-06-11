@@ -1,5 +1,5 @@
-# Alpine base image with python v3.6
-FROM python:3.6-alpine
+# Ubuntu 18.10 (Cosmic Cuttlefish) as base image
+FROM ubuntu:18.10
 
 MAINTAINER Prashant Shahi "coolboi567@gmail.com"
 
@@ -10,16 +10,15 @@ WORKDIR /usr/src/app
 COPY requirements.txt ./
 
 # Installing dependencies
-RUN apk update && \
-	apk add build-base python-dev libc6-compat && \
-	pip install -U -r requirements.txt && \
-	pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && \
+	apt-get install -y python3-pip &&\
+	pip3 install --no-cache-dir -r requirements.txt
 
 # Copying the complete source code to the work directory
-COPY . ./
+COPY . .
 
 # Exposing port 5000
 EXPOSE 5000
 
 # Running the app
-CMD [ "python", "main.py" ]
+CMD [ "python3", "main.py" ]

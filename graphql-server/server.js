@@ -8,13 +8,15 @@ var fs = require('fs');
 var schema_data = fs.readFileSync('./schema/schema.graphql');
 var schema = buildSchema(schema_data.toString());
 
+const rest_server = "http://"+process.env.REST_SERVER || "http://localhost:5000"
+
 // Creating function to fetch data
 // Traversal begins from salesman with the provided email identifier
 var getSalesman = (args) =>{
     const payload = {
         email: args.email,
     };
-    const response_obj = axios.post('http://localhost:5000/salesman', payload)
+    const response_obj = axios.post(rest_server+'/salesman', payload)
         .then((response) => {
             const data = response.data;
             if(data['status']==="success") {
@@ -46,7 +48,7 @@ var addSalesMan = (args) => {
         email: args.email,
         referrer: args.referrer
     };
-    const response_obj = axios.post('http://localhost:5000/create-salesman', payload)
+    const response_obj = axios.post(rest_server+'/create-salesman', payload)
         .then((response) => {
             const data = response.data;
             if(data['status']==="success") {
@@ -83,7 +85,7 @@ var addSales = (args) => {
         salesman_email: args.salesman_email,
         customer_email: args.customer_email
     }
-    const response_obj = axios.post('http://localhost:5000/create-sales', payload)
+    const response_obj = axios.post(rest_server+'/create-sales', payload)
         .then((response) => {
             const data = response.data;
             if(data['status']==="success") {
@@ -113,7 +115,7 @@ var addCustomer = (args) => {
         age: args.age,
         email: args.email
     };
-    const response_obj = axios.post('http://localhost:5000/create-customer', payload)
+    const response_obj = axios.post(rest_server+'/create-customer', payload)
         .then((response) => {
             const data = response.data;
             if(data['status']==="success") {
@@ -142,7 +144,7 @@ var deleteNode = (args) => {
         reference: args.reference,
         value: args.value
     };
-    const response_obj = axios.post('http://localhost:5000/delete-node', payload)
+    const response_obj = axios.post(rest_server+'/delete-node', payload)
         .then((response) => {
             const data = response.data;
             if(data['status']==="success") {

@@ -4,13 +4,14 @@ from flask import Flask, flash, render_template, redirect, request, url_for, Res
 import random
 import datetime
 from string import Template
-import re
+import re, os
 
 app = Flask(__name__)
+dgraph_address = os.environ.get('DGRAPH_SERVER', 'http://localhost:9080')
 
 # Create a client stub.
 def create_client_stub():
-    return pydgraph.DgraphClientStub('localhost:9080')
+    return pydgraph.DgraphClientStub(dgraph_address)
 
 # Create a client.
 def create_client():
