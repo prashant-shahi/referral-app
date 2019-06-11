@@ -2,7 +2,7 @@
 ## Create Customer
 ```graphql
 mutation{
-  addcustomer(name: "cus", age: 22, email: "customer@gmail.com"){
+  addcustomer(name: "Customer", age: 23, email: "customer@gmail.com"){
     uid
     name
     age
@@ -14,7 +14,7 @@ mutation{
 ## Create Salesman
 ```graphql
 mutation{
-  addsalesman(name: "sal", age: 22, email: "sal@gmail.com"){
+  addsalesman(name: "Salesman", age: 23, email: "salesman@gmail.com"){
     uid
     name
     age
@@ -26,7 +26,7 @@ mutation{
 ## Create Sales
 ```graphql
 mutation{
-  addsales(item: "Prestige Induction", store:"ABC Kitchenware", location: "BTM Layout, Bangalore", category: ["Kitchenware", "Electronics"], quantity: 2, price: 2100, customer_email: "cus@gmail.com", salesman_email:"sal@gmail.com") {
+  addsales(item: "Prestige Induction", store:"ABC Kitchenware", location: "BTM Layout, Bangalore", category: ["Kitchenware", "Electronics"], quantity: 2, price: 2100, customer_email: "customer@gmail.com", salesman_email:"salesman@gmail.com") {
     uid
     invoice_no
     item{
@@ -52,8 +52,10 @@ mutation{
 ## Delete node
 ```graphql
 mutation {
-  deletenode(reference, value){
-
+  deletenode(reference: "product.name", value: "Prestige Induction"){
+    status
+    error
+    message
   }
 }
 ```
