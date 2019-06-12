@@ -14,7 +14,7 @@ mutation{
 ## Create Salesman
 ```graphql
 mutation{
-  addsalesman(name: "Salesman", age: 23, email: "salesman@gmail.com"){
+  addsalesman(name: "Salesman", age: 23, email: "salesman@gmail.com", referred: "alan@gmail.com"){
     uid
     name
     age

@@ -49,10 +49,7 @@ type Response {
 }
 
 type Query {
-    salesman(email: String): SalesMan
-
-    customer(email: String): Customer
-    Sales(email: String): Sales
+    salesman(email: String): salesman
 }
 
 type Mutation {
