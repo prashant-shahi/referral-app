@@ -27,6 +27,14 @@ Now, load the schema and sample data into Dgraph using the API end point created
 curl -XGET http://localhost:5000/setup
 ```
 
+Go to `http://localhost:4000/graphql` to access the GraphiQL
+```
+open http://localhost:4000/graphql
+```
+
+You can also use Ratel(Dgraph UI for mutation/query/schema alteration) available at `http://localhost:8000` to view and modify data/schema in Dgraph.
+
+
 ## Screenshots
 Query and Result in GraphiQL:
 <p float="left">
